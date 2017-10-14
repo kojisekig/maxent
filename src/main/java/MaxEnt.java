@@ -13,14 +13,14 @@ import java.util.List;
  */
 public class MaxEnt {
 
-    private final static boolean DEBUG = true;
+    private static final boolean DEBUG = true;
 
-    private final int ITERATIONS = 200;
+    private static final int ITERATIONS = 200;
 
     private static final double EPSILON = 0.001;
 
     // the number of training instances
-    private int N;
+    private final int N;
 
     // the minimal of Y
     private int minY;
@@ -34,11 +34,11 @@ public class MaxEnt {
     // the weight to learn.
     private double w[];
 
-    private List<Instance> instances = new ArrayList<Instance>();
+    private final List<Instance> instances;
 
-    private List<FeatureFunction> functions = new ArrayList<FeatureFunction>();
+    private List<FeatureFunction> functions;
 
-    private List<Feature> features = new ArrayList<Feature>();
+    private List<Feature> features;
 
     public static void main(String... args) throws FileNotFoundException {
         List<Instance> instances = DataSet.readDataSet("examples/zoo.train");
@@ -59,7 +59,7 @@ public class MaxEnt {
 
     public MaxEnt(List<Instance> trainInstance) {
 
-        instances.addAll(trainInstance);
+        instances = trainInstance;
         N = instances.size();
         createFeatFunctions(instances);
         w = new double[functions.size()];
@@ -68,16 +68,19 @@ public class MaxEnt {
     }
 
     private void createFeatFunctions(List<Instance> instances) {
+        functions = new ArrayList<FeatureFunction>();
+        features = new ArrayList<Feature>();
 
-        int maxLabel = 0;
+        int maxLabel = Integer.MIN_VALUE, minLabel = Integer.MAX_VALUE;
         int[] maxFeatures = new int[instances.get(0).getFeature().getValues().length];
-        LinkedHashSet<Feature> featureSet = new LinkedHashSet<Feature>();
 
-        minY = 1;                   // TODO: check automatically
         for (Instance instance : instances) {
 
             if (instance.getLabel() > maxLabel) {
-                maxLabel = instance.getLabel();
+              maxLabel = instance.getLabel();
+            }
+            if (instance.getLabel() < minLabel) {
+              minLabel = instance.getLabel();
             }
 
             for (int i = 0; i < instance.getFeature().getValues().length; i++) {
@@ -86,16 +89,15 @@ public class MaxEnt {
                 }
             }
 
-            featureSet.add(instance.getFeature());
+            features.add(instance.getFeature());
         }
 
-        features = new ArrayList<Feature>(featureSet);
-
+        minY = minLabel;
         maxY = maxLabel;
 
         for (int i = 0; i < maxFeatures.length; i++) {
             for (int x = 0; x <= maxFeatures[i]; x++) {
-                for (int y = minY; y <= maxLabel; y++) {
+                for (int y = minY; y <= maxY; y++) {
                     functions.add(new FeatureFunction(i, x, y));
                 }
             }
@@ -226,7 +228,7 @@ public class MaxEnt {
         throw new RuntimeException("IIS did not converge");
     }
 
-    class FeatureFunction {
+    static class FeatureFunction {
 
         private int index;
         private int value;

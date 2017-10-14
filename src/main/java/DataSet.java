@@ -19,7 +19,8 @@ import java.util.Scanner;
 public class DataSet {
 
     public static List<Instance> readDataSet(String path) throws FileNotFoundException {
-        File file = new File("examples/zoo.train");
+      //File file = new File("examples/zoo.train");
+      File file = new File(path);
         Scanner scanner = new Scanner(file);
         List<Instance> instances = new ArrayList<Instance>();
 
